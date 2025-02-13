@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class PlayerMove : MonoBehaviour
 {
@@ -9,12 +10,14 @@ public class PlayerMove : MonoBehaviour
 
     Rigidbody2D rigid;
     SpriteRenderer spriteRenderer;
+    Collider2D collider;
     Animator anim;
 
     void Start()
     {
         rigid = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        collider = GetComponent<Collider2D>();
         anim = GetComponent<Animator>();
     }
 
@@ -53,15 +56,14 @@ public class PlayerMove : MonoBehaviour
         else if (rigid.velocity.x < Speed*(-1))
             rigid.velocity = new Vector2(Speed*(-1), rigid.velocity.y);
 
-        if (rigid.velocity.y < 0)
+        // 현재 더블 점프로 구현되어 있음 but 점프 1회를 원함 근데 잘 모르겠습니다.
+        Vector2 rayOrigin = new Vector2(collider.bounds.center.x, collider.bounds.min.y);
+        Debug.DrawRay(rayOrigin, Vector2.down * 1f, new Color(0, 1, 0));
+        RaycastHit2D rayHit = Physics2D.Raycast(rayOrigin, Vector2.down, 1, LayerMask.GetMask("Ground", "Block"));
+        if (rayHit.collider != null)
         {
-            Debug.DrawRay(rigid.position, Vector3.down, new Color(0, 1, 0));
-            RaycastHit2D rayHit = Physics2D.Raycast(rigid.position, Vector3.down, 1, LayerMask.GetMask("Ground"));
-            if (rayHit.collider != null)
-            {
-                if (rayHit.distance < 0.5f)
-                    anim.SetBool("isJump", false);
-            }
+            if (rayHit.distance < 0.5f)
+                anim.SetBool("isJump", false);
         }
     }
 }
